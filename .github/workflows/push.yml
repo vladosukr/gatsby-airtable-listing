@@ -49,5 +49,7 @@ jobs:
       - uses: pulumi/actions@v2
         with:
           command: up
+          stack-name: prod
+          work-dir: IaaS
         env:
           PULUMI_ACCESS_TOKEN: ${{ secrets.PULUMI_ACCESS_TOKEN }}

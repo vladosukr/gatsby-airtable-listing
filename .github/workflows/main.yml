@@ -1,4 +1,4 @@
-name: CI/CD pipeline (GitHub + GitHub Actions + Pulumi + S3 + CloudFront)
+name: CI/CD pipeline (GitHub + GitHub Actions + S3 + CloudFront)
 
 on:
   push:

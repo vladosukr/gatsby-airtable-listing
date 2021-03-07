@@ -36,13 +36,6 @@ jobs:
         run: |
           npm ci
           npm run build
-  up:
-    needs: build
-    runs-on: ubuntu-latest
-    steps:
-      - uses: actions/checkout@v2
-        with:
-          fetch-depth: 1
       - name: Configure AWS Credentials
         uses: aws-actions/configure-aws-credentials@v1
         with:

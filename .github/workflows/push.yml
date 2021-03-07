@@ -14,7 +14,7 @@ jobs:
       - run: pulumi up
       - uses: pulumi/actions@v1
         with:
-          command: up
+          command: up --skip-preview --non-interactive
         env:
           pulumi_access_token: ${{ secrets.PULUMI_ACCESS_TOKEN }}
           pulumi_root: IaaS

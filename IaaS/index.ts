@@ -30,14 +30,14 @@ function publicReadPolicyForBucket(bucketName: string) {
         }]
     });
 }
+
+export const bucketName = bucket.bucket;
+
 const s3OriginId = "myS3Origin";
 const s3Distribution = new aws.cloudfront.Distribution("s3Distribution", {
     origins: [{
         domainName: bucket.bucketRegionalDomainName,
         originId: s3OriginId,
-        s3OriginConfig: {
-            originAccessIdentity: "origin-access-identity/cloudfront/E1Y0F88IS7ZT6S",
-        },
     }],
     enabled: true,
     isIpv6Enabled: true,
@@ -71,9 +71,6 @@ const s3Distribution = new aws.cloudfront.Distribution("s3Distribution", {
             restrictionType: "whitelist",
             locations: [
                 "UA",
-                "CA",
-                "GR",
-                "DE",
             ],
         },
     },
@@ -84,3 +81,4 @@ const s3Distribution = new aws.cloudfront.Distribution("s3Distribution", {
         cloudfrontDefaultCertificate: true,
     },
 });
+export const cloudFrontOriginId = s3OriginId;

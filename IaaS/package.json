@@ -1,5 +1,5 @@
 {
-    "name": "airtable-project",
+    "name": "demo",
     "devDependencies": {
         "@types/node": "^10.0.0"
     },

@@ -11,21 +11,35 @@ jobs:
     steps:
       - name: checkout-branch
         uses: actions/checkout@v2
-        
+      - name: Install Pulumi CLI
+        uses: pulumi/action-install-pulumi-cli@v1.0.1
+      - run: npm install
+      - uses: pulumi/actions@v2
+        with:
+          command: up
+        env:
+          pulumi_access_token: ${{ secrets.PULUMI_ACCESS_TOKEN }}
+          pulumi_root: IaaS
+          aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
+          aws-region: ${{ env.AWS_REGION }}
+          aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+     
+      - name: checkout-branch
+        uses: actions/checkout@v2
       - name: Use Node.js 
         uses: actions/setup-node@v2
         with:
           node-version: 12
-      
-      - name: CI
-        run: npm ci
-      
+      - name: "Install dependencies"
+        run: npm install
       - name: Build-project
         env:
           AIRTABLE_API_KEY: ${{ secrets.AIRTABLE_API_KEY }}
           AIRTABLE_BASE_ID: ${{ secrets.AIRTABLE_BASE_ID }}
           AIRTABLE_TABLE_NAME: ${{ secrets.AIRTABLE_TABLE_NAME }}
-        run: npm run build
+        run: |
+          npm ci
+          npm run build
   up:
     needs: build
     runs-on: ubuntu-latest
@@ -33,23 +47,16 @@ jobs:
       - uses: actions/checkout@v2
         with:
           fetch-depth: 1
-      - uses: actions/setup-node@v1
-        with:
-          node-version: 14.x
       - name: Configure AWS Credentials
         uses: aws-actions/configure-aws-credentials@v1
         with:
           aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
           aws-region: ${{ env.AWS_REGION }}
           aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
-
-      - name: Install Pulumi CLI
-        uses: pulumi/action-install-pulumi-cli@v1.0.1
-      - run: npm install
-      - uses: pulumi/actions@v2
+      - name: Deploy
+        uses: jonelantha/gatsby-s3-action@v1
         with:
-          command: up
-          stack-name: dev
-          work-dir: IaaS
-        env:
-          PULUMI_ACCESS_TOKEN: ${{ secrets.PULUMI_ACCESS_TOKEN }}
+          dest-s3-bucket: airtable-project
+          cloudfront-id-to-invalidate: ${{ secrets.CF_DISTRIBUTION }}
+
+      

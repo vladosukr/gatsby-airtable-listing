@@ -1,31 +1,22 @@
-"use strict";
+import * as pulumi from "@pulumi/pulumi";
+import * as aws from "@pulumi/aws";
 
-const aws = require("@pulumi/aws");
-const pulumi = require("@pulumi/pulumi");
-const mime = require("mime");
-
-// Create a bucket and expose a website index document
-let siteBucket = new aws.s3.Bucket("airtable-project", {
+ 
+const bucket = new aws.s3.Bucket("airtable-project", {
+    acl: "public-read",
     website: {
         indexDocument: "index.html",
+        errorDocument: "error.html",
     },
 });
 
-let siteDir = "src"; // directory for content files
+const bucketPolicy = new aws.s3.BucketPolicy("my-bucket-policy", {
+    bucket: bucket.bucket,
+    policy: bucket.bucket.apply(publicReadPolicyForBucket)
+})
 
-// For each file in the directory, create an S3 object stored in `siteBucket`
-for (let item of require("fs").readdirSync(siteDir)) {
-    let filePath = require("path").join(siteDir, item);
-    let object = new aws.s3.BucketObject(item, {
-        bucket: siteBucket,                               // reference the s3.Bucket object
-        source: new pulumi.asset.FileAsset(filePath),     // use FileAsset to point to a file
-        contentType: mime.getType(filePath) || undefined, // set the MIME type of the file
-    });
-}
-
-// Create an S3 Bucket Policy to allow public read of all objects in bucket
-function publicReadPolicyForBucket(bucketName) {
-    return {
+function publicReadPolicyForBucket(bucketName: string) {
+    return JSON.stringify({
         Version: "2012-10-17",
         Statement: [{
             Effect: "Allow",
@@ -37,15 +28,60 @@ function publicReadPolicyForBucket(bucketName) {
                 `arn:aws:s3:::${bucketName}/*` // policy refers to bucket name explicitly
             ]
         }]
-    };
+    });
 }
+const s3OriginId = "myS3Origin";
+const s3Distribution = new aws.cloudfront.Distribution("s3Distribution", {
+    origins: [{
+        domainName: bucket.bucketRegionalDomainName,
+        originId: s3OriginId,
+        s3OriginConfig: {
+            originAccessIdentity: "origin-access-identity/cloudfront/E1Y0F88IS7ZT6S",
+        },
+    }],
+    enabled: true,
+    isIpv6Enabled: true,
+    comment: "Some comment",
+    defaultRootObject: "index.html",
 
-// Set the access policy for the bucket so all objects are readable
-let bucketPolicy = new aws.s3.BucketPolicy("bucketPolicy", {
-    bucket: siteBucket.bucket, // refer to the bucket created earlier
-    policy: siteBucket.bucket.apply(publicReadPolicyForBucket) // use output property `siteBucket.bucket`
+    defaultCacheBehavior: {
+        allowedMethods: [
+            "DELETE",
+            "GET",
+            "HEAD",
+        ],
+        cachedMethods: [
+            "GET",
+            "HEAD",
+        ],
+        targetOriginId: s3OriginId,
+        forwardedValues: {
+            queryString: false,
+            cookies: {
+                forward: "none",
+            },
+        },
+        viewerProtocolPolicy: "allow-all",
+        minTtl: 0,
+        defaultTtl: 3600,
+        maxTtl: 86400,
+    },
+    priceClass: "PriceClass_200",
+    restrictions: {
+        geoRestriction: {
+            restrictionType: "whitelist",
+            locations: [
+                "UA",
+                "CA",
+                "GR",
+                "DE",
+            ],
+        },
+    },
+    tags: {
+        Environment: "production",
+    },
+    viewerCertificate: {
+        cloudfrontDefaultCertificate: true,
+    },
 });
-
-// Stack exports
-exports.bucketName = siteBucket.bucket;
-exports.websiteUrl = siteBucket.websiteEndpoint;

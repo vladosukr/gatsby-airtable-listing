@@ -2,7 +2,7 @@ import * as pulumi from "@pulumi/pulumi";
 import * as aws from "@pulumi/aws";
 
  
-const bucket = new aws.s3.Bucket("airtable-project", {
+const bucket = new aws.s3.Bucket("airtable-project-bfd6f7c", {
     acl: "public-read",
     website: {
         indexDocument: "index.html",

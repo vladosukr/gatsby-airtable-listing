@@ -45,7 +45,7 @@ jobs:
       - name: Deploy
         uses: jonelantha/gatsby-s3-action@v1
         with:
-          dest-s3-bucket: airtable-project-bfd6f7c
+          dest-s3-bucket: airtable-project-bfd6f7c-391f411
           cloudfront-id-to-invalidate: ${{ secrets.CF_DISTRIBUTION }}
 
       

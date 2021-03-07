@@ -9,12 +9,10 @@ jobs:
     steps:
       - name: checkout-branch
         uses: actions/checkout@v2
-      - name: Install Pulumi CLI
-        uses: pulumi/action-install-pulumi-cli@v1.0.1
-      - run: pulumi up
-      - uses: pulumi/actions@v1
+      - name: pulumi up
+        uses: pulumi/actions@v1
         with:
-          command: up --skip-preview --non-interactive
+          command: up
         env:
           pulumi_access_token: ${{ secrets.PULUMI_ACCESS_TOKEN }}
           pulumi_root: IaaS

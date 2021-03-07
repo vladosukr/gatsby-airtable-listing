@@ -46,7 +46,6 @@ const s3Distribution = new aws.cloudfront.Distribution("s3Distribution", {
 
     defaultCacheBehavior: {
         allowedMethods: [
-            "DELETE",
             "GET",
             "HEAD",
         ],

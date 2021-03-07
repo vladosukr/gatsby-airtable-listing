@@ -41,7 +41,7 @@ const s3Distribution = new aws.cloudfront.Distribution("s3Distribution", {
     }],
     enabled: true,
     isIpv6Enabled: true,
-    comment: "Some comment",
+    comment: "My comment",
     defaultRootObject: "index.html",
 
     defaultCacheBehavior: {
